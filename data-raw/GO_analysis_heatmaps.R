@@ -345,7 +345,7 @@ treeplot_up_CC <- enrichplot::treeplot(treeplot_up_CC,
 
 #CompareGO data
 limma_compare <- vector(mode = "list",length = 2)
-names(limma_compare)<-c("Upregulated in PH vs L", "Upregulated in L vs PH")
+names(limma_compare)<-c("Upregulated in PH vs L", "Downregulated in PH vs L")
 
 limma_compare[[1]]<- limma_data$L_vs_PH |>
     dplyr::filter(adj.P.Val<0.05 & logFC<0) |>
@@ -378,15 +378,17 @@ for (i in 1:2){
 GOdata <- clusterProfiler::compareCluster(limma_compare,
                                           fun = "enrichGO",
                                           universe = bg$ENTREZID,
-                                          OrgDb = org.Mm.eg.db,
+                                          OrgDb = "org.Mm.eg.db",
                                           ont = "CC",
                                           readable = T)
 CompareClusterFigure <- clusterProfiler::dotplot(GOdata, showCategory = 10)
 
-# tiff(here::here("data/figures/compareclusterLvsPH.tiff"), width = 25, height = 20, res = 200, units = "cm")
-# CompareClusterFigure+
-#     ggplot2::ggtitle(label = "Gene Ontology Enrichment",
-#                      subtitle = "Cellular Component")+
-#     ggplot2::theme(title = ggplot2::element_text(size = 20,
-#                                                  hjust = 0.5))
-# dev.off()
+
+
+ # tiff(here::here("data/figures/compareclusterLvsPH.tiff"), width = 25, height = 20, res = 200, units = "cm")
+ # CompareClusterFigure+
+ #     ggplot2::ggtitle(label = "Gene Ontology Enrichment",
+ #                      subtitle = "Cellular Component")+
+ #     ggplot2::theme(title = ggplot2::element_text(size = 20,
+ #                                                  hjust = 0.5))
+ # dev.off()

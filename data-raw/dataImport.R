@@ -155,3 +155,19 @@ normalized_table <- as.data.frame(normalized_proteomics_res, row.names = T) |>
 
 normalized_table <- dplyr::left_join(normalized_table, conv)
 #openxlsx::write.xlsx(normalized_table, here::here("data/normalizedMatrix.xlsx"))
+
+#Check CPM comparison
+y <- as.data.frame(normalized_proteomics )|>
+    dplyr::rowwise() |>
+    dplyr::summarize(L = mean(c(Liver1, Liver2, Liver3, Liver4, Liver5, Liver6, Liver7, Liver8)),
+                     CS = mean(c(CS1, CS2, CS3, CS4, CS5, CS6, CS7, CS8)),
+                     PH = mean(c(PH1, PH2, PH3, PH4, PH5, PH6, PH7, PH8)))
+
+# tiff(here::here("data/figures/cpm_comparison.tiff"), width = 15, height = 15, res = 100, units = "cm")
+# ggplot(as.data.frame(y), aes(x = L, y = PH))+
+#     geom_point()+
+#     geom_abline(slope = 1, intercept = 0)+
+#     ggplot2::ggtitle("logCPM L vs PH")+
+#     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5,
+#                                                       size = 18))
+# dev.off()

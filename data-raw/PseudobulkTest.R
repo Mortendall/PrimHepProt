@@ -146,7 +146,7 @@ sce <- sce[rowSums(counts(sce) > 1) >=10]
 
 groups <- colData(sce)[,c("Group", "hash.mcl.ID")]
 
-pb <- Matrix.utils::aggregate.Matrix(t(counts(sce)),
+pb <- Matrix.utils::aggregate.Matrix(t(SingleCellExperiment::counts(sce)),
                                      groupings = groups,
                                      fun = "sum")
 
@@ -254,6 +254,12 @@ top20plot <- ggplot(gathered_top20_sig) +
 #
 # top20plot
 #  dev.off()
+names <- openxlsx::getSheetNames(here::here("data/pseudobulkDeSeq2.xlsx"))
+res_tbl_list <- vector(mode = "list", length = length(names))
+names(res_tbl_list)<-names
+for (i in 1:length(names)){
+    res_tbl_list[[i]]<- openxlsx::read.xlsx(here::here("data/pseudobulkDeSeq2.xlsx"),sheet = i)
+}
 
 sig_genes <- lapply(res_tbl_list, function(x) dplyr::filter(x, padj<0.05))
 
@@ -318,28 +324,45 @@ entrez_list <- lapply(sub_group_comparison, function(x) clusterProfiler::bitr(x$
                                                                               toType = "ENTREZID",
                                                                               OrgDb = "org.Mm.eg.db") |>
                           dplyr::pull(ENTREZID))
-names(entrez_list)<- c("Up Prot + RNA", "Down Prot + RNA", "Down Prot Up RNA", "Up Prot Down RNA")
+names(entrez_list)<- c("PH down Prot + RNA", "PH up Prot + RNA", "PH up Prot down RNA", "PH down Prot up RNA")
 GO_results <- clusterProfiler::compareCluster(entrez_list,
                                               fun = clusterProfiler::enrichGO,
                                               keyType = "ENTREZID",
                                               ont = "CC",
                                               universe = bg$ENTREZID,
-                                              OrgDb = "org.Mm.eg.db")
+                                              OrgDb = "org.Mm.eg.db",
+                                              readable = T)
 GO_results_MF <- clusterProfiler::compareCluster(entrez_list,
                                                  fun = clusterProfiler::enrichGO,
                                                  keyType = "ENTREZID",
                                                  ont = "MF",
                                                  universe = bg$ENTREZID,
-                                                 OrgDb = "org.Mm.eg.db")
+                                                 OrgDb = "org.Mm.eg.db",
+                                                 readable = T)
 
-CompareClusterFigure <- enrichplot::dotplot(GO_results, by = "count")
+CompareClusterFigure <- enrichplot::dotplot(GO_results, by = "count", showCategory = 5)
+CompareClusterFigureMF <- enrichplot::dotplot(GO_results_MF, by = "count")
 # saveRDS(GO_results, here::here("data/pseudoBulkGOCC.rds"))
 # saveRDS(GO_results_MF, here::here("data/pseudoBulkGOMF.rds"))
 
- # tiff(here::here("data/figures/singleCell/compareclusterLvsPH.tiff"), width = 37, height = 27, res = 200, units = "cm")
- # CompareClusterFigure+
- #     ggplot2::ggtitle(label = "Gene Ontology Enrichment - Cellular Component",
- #                      subtitle = "Up = Increased expression in L \n Down = Increased expression in PH")+
+  # tiff(here::here("data/figures/singleCell/compareclusterLvsPH.tiff"), width = 37, height = 27, res = 200, units = "cm")
+  # CompareClusterFigure+
+  #     ggplot2::ggtitle(label = "Gene Ontology Enrichment - Cellular Component",
+  #                      subtitle = "Up = Increased expression in PH compared to L \n Down = Decreased expression in PH compared to L")+
+  #     ggplot2::theme(plot.title = ggplot2::element_text(size = 24,
+  #                                                  hjust = 0.5),
+  #                    plot.subtitle = ggplot2::element_text(size = 20,
+  #                                                          hjust = 0.5),
+  #                    axis.text.y = ggplot2::element_text(size = 18),
+  #                    axis.text.x = ggplot2::element_text(size = 16),
+  #                    legend.text = ggplot2::element_text(size = 16),
+  #                    axis.title.x = ggplot2::element_blank())
+  # dev.off()
+
+ # tiff(here::here("data/figures/singleCell/compareclusterLvsPH_MF.tiff"), width = 37, height = 27, res = 200, units = "cm")
+ # CompareClusterFigureMF+
+ #     ggplot2::ggtitle(label = "Gene Ontology Enrichment - Molecular Function",
+ #                      subtitle = "Up = Increased expression in PH compared to L \n Down = Decreased expression in PH compared to L")+
  #     ggplot2::theme(plot.title = ggplot2::element_text(size = 24,
  #                                                  hjust = 0.5),
  #                    plot.subtitle = ggplot2::element_text(size = 20,
@@ -347,6 +370,7 @@ CompareClusterFigure <- enrichplot::dotplot(GO_results, by = "count")
  #                    axis.text.y = ggplot2::element_text(size = 18),
  #                    axis.text.x = ggplot2::element_text(size = 16),
  #                    legend.text = ggplot2::element_text(size = 16),
- #                    axis.title.x = ggplot2::element_blank())
+ #                    axis.title.x = ggplot2::element_blank())+
+ #     ggplot2::scale_y_discrete(labels=function(x) stringr::str_wrap(x, width=40))
+ #
  # dev.off()
-

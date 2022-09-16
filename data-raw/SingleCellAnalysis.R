@@ -289,3 +289,8 @@ Featureplots
 #                                     )
 #                                 )
 #  dev.off()
+
+# tiff(here::here("data/figures/singleCell/gluttransporters.tiff"), height = 15, width = 30, res = 150, units = "cm")
+# Seurat::FeaturePlot(seurat_test, c("Slc2a1", "Slc2a2"))
+# dev.off()
+
